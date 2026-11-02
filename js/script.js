@@ -21,21 +21,24 @@ document.addEventListener("DOMContentLoaded", () => {
         hamburger.addEventListener('click', () => {
             navLinks.classList.toggle('active');
             const icon = hamburger.querySelector('i');
-            if (navLinks.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+            if (icon) {
+                if (navLinks.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
             }
         });
 
         links.forEach(link => {
             link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
-                if (hamburger.querySelector('i')) {
-                    hamburger.querySelector('i').classList.remove('fa-times');
-                    hamburger.querySelector('i').classList.add('fa-bars');
+                const icon = hamburger.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
                 }
             });
         });
@@ -61,40 +64,62 @@ document.addEventListener("DOMContentLoaded", () => {
         observer.observe(element);
     });
 
-    // 4. CARRUSEL DE GALERÍA CON FLECHAS Y PUNTOS
+    // 4. CARRUSEL DE GALERÍA CON FLECHAS Y PUNTOS DINÁMICOS
     const track = document.getElementById('carouselTrack');
     if (track) {
         const slides = Array.from(track.children);
         const nextBtn = document.getElementById('nextBtn');
         const prevBtn = document.getElementById('prevBtn');
         const dotsNav = document.getElementById('carouselDots');
-        const dots = Array.from(dotsNav.children);
 
+        if (dotsNav && dotsNav.children.length === 0) {
+            slides.forEach((_, idx) => {
+                const dot = document.createElement('button');
+                dot.classList.add('carousel-dot');
+                if (idx === 0) dot.classList.add('current-dot');
+                dot.setAttribute('data-index', idx);
+                dotsNav.appendChild(dot);
+            });
+        }
+
+        const dots = dotsNav ? Array.from(dotsNav.children) : [];
         let currentIndex = 0;
 
         const updateCarousel = (index) => {
             track.style.transform = `translateX(-${index * 100}%)`;
-            dots.forEach(dot => dot.classList.remove('current-dot'));
-            dots[index].classList.add('current-dot');
+            if (dots.length > 0) {
+                dots.forEach(dot => dot.classList.remove('current-dot'));
+                if (dots[index]) {
+                    dots[index].classList.add('current-dot');
+                }
+            }
         };
 
-        nextBtn.addEventListener('click', () => {
-            currentIndex = (currentIndex + 1) % slides.length;
-            updateCarousel(currentIndex);
-        });
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                currentIndex = (currentIndex + 1) % slides.length;
+                updateCarousel(currentIndex);
+            });
+        }
 
-        prevBtn.addEventListener('click', () => {
-            currentIndex = (currentIndex - 1 + slides.length) % slides.length;
-            updateCarousel(currentIndex);
-        });
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                updateCarousel(currentIndex);
+            });
+        }
 
-        dotsNav.addEventListener('click', e => {
-            const targetDot = e.target.closest('button.carousel-dot');
-            if (!targetDot) return;
-            const index = dots.indexOf(targetDot);
-            currentIndex = index;
-            updateCarousel(currentIndex);
-        });
+        if (dotsNav) {
+            dotsNav.addEventListener('click', e => {
+                const targetDot = e.target.closest('button.carousel-dot');
+                if (!targetDot) return;
+                const index = dots.indexOf(targetDot);
+                if (index > -1) {
+                    currentIndex = index;
+                    updateCarousel(currentIndex);
+                }
+            });
+        }
     }
 
     // 5. INICIALIZAR EFECTO DE TEXTO TYPEWRITER
